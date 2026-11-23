@@ -1,15 +1,22 @@
+import React from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '../components/Button';
 
 function NotFoundPage() {
   return (
-    <div className="text-center py-20">
-      <h1 className="text-6xl font-bold text-gray-300 mb-4">404</h1>
-      <p className="text-xl text-gray-600 mb-8">Page not found.</p>
-      <Link
-        to="/"
-        className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors"
-      >
-        Go Home
+    <div className="text-center py-24 max-w-md mx-auto">
+      <span className="text-7xl font-extrabold text-border block mb-4 select-none">
+        404
+      </span>
+      <h1 className="text-2xl font-bold text-primary mb-2">Page Not Found</h1>
+      <p className="text-sm text-text-secondary mb-8 leading-relaxed">
+        The page you are looking for does not exist or has been moved.
+      </p>
+      <Link to="/">
+        <Button variant="primary" leftIcon={<ArrowLeft className="h-4 w-4" />}>
+          Return to Home
+        </Button>
       </Link>
     </div>
   );

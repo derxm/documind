@@ -1,3 +1,23 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #F8F9FC;
+    color: #202235;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: #171A2E;
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    background-color: #EEEAFE;
+    color: #635BFF;
+  }
+}
