@@ -5,6 +5,7 @@ import {
   initialConversations,
   generateDemoResponse,
 } from '../../components/dashboard/assistant/assistantData';
+import { useDocumentContext } from '../../context/DocumentContext';
 
 // ---------------------------------------------------------------------------
 // ID generator
@@ -17,6 +18,12 @@ const uid = (prefix) => `${prefix}-${++_id}-${Date.now()}`;
 // Owns all conversation state and wires ConversationSidebar ↔ ChatArea.
 // ---------------------------------------------------------------------------
 export function AssistantPage() {
+  const {
+    documents,
+    conversationDocumentContexts,
+    setConversationDocumentContexts,
+  } = useDocumentContext();
+
   // --- Conversations ---
   const [conversations, setConversations] = useState(initialConversations);
   const [activeId, setActiveId]           = useState(null);
@@ -38,15 +45,41 @@ export function AssistantPage() {
     initialConversations.forEach((c) => {
       if (c.documentId) map[c.id] = c.documentId;
     });
-    return map;
+    return { ...map, ...conversationDocumentContexts };
   });
 
   // Keep contextMap in a ref so the timer callback can access the latest
   // value without stale-closure problems.
   const contextMapRef = useRef(contextMap);
+  const documentsRef = useRef(documents);
   useEffect(() => {
     contextMapRef.current = contextMap;
   }, [contextMap]);
+  useEffect(() => {
+    setConversationDocumentContexts(contextMap);
+  }, [contextMap, setConversationDocumentContexts]);
+  useEffect(() => {
+    documentsRef.current = documents;
+  }, [documents]);
+
+  useEffect(() => {
+    const documentIds = new Set(documents.map((document) => document.id));
+    setContextMap((current) => {
+      let changed = false;
+      const next = {};
+
+      Object.entries(current).forEach(([conversationId, documentId]) => {
+        if (documentId === null || documentIds.has(documentId)) {
+          next[conversationId] = documentId;
+        } else {
+          next[conversationId] = null;
+          changed = true;
+        }
+      });
+
+      return changed ? next : current;
+    });
+  }, [documents]);
 
   // --- Mobile sidebar drawer ---
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -120,7 +153,8 @@ export function AssistantPage() {
       ) return;
 
       const docId = contextMapRef.current[targetId] ?? null;
-      const aiContent = generateDemoResponse(text, docId);
+      const doc = documentsRef.current.find((document) => document.id === docId);
+      const aiContent = generateDemoResponse(text, doc?.name);
       const aiMsg = {
         id: uid('msg'),
         role: 'ai',
@@ -194,7 +228,7 @@ export function AssistantPage() {
   // ---------------------------------------------------------------------------
   const handleDocumentSelect = useCallback((docId) => {
     const id = activeIdRef.current;
-    if (!id) return;
+    if (!id || !documentsRef.current.some((document) => document.id === docId)) return;
     setContextMap((prev) => ({ ...prev, [id]: docId }));
   }, []);
 
@@ -202,9 +236,7 @@ export function AssistantPage() {
     const id = activeIdRef.current;
     if (!id) return;
     setContextMap((prev) => {
-      const next = { ...prev };
-      delete next[id];
-      return next;
+      return { ...prev, [id]: null };
     });
   }, []);
 

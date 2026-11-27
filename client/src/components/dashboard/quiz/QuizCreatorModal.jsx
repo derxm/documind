@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Sparkles, AlertCircle, Info } from 'lucide-react';
 import { Button } from '../../index';
-import { quizSourceDocuments, DIFFICULTIES } from './quizData';
+import { GENERAL_QUIZ_SOURCE, DIFFICULTIES } from './quizData';
+import { useDocumentContext } from '../../../context/DocumentContext';
 
 const QUESTION_COUNTS = [5, 10, 15, 20];
 const QUESTION_TYPES  = ['Multiple Choice', 'True / False'];
 
 const EMPTY = {
   title: '',
-  sourceId: 'doc-1',
+  sourceId: GENERAL_QUIZ_SOURCE.id,
   count: 10,
   difficulty: 'Medium',
   types: ['Multiple Choice', 'True / False'],
@@ -21,12 +22,19 @@ const EMPTY = {
  * @param {Function} props.onCreate  (config) => void
  */
 export function QuizCreatorModal({ isOpen, onClose, onCreate }) {
+  const { documents } = useDocumentContext();
   const [form, setForm]     = useState(EMPTY);
   const [errors, setErrors] = useState({});
+  const sourceDocuments = [...documents, GENERAL_QUIZ_SOURCE];
+  const documentsRef = useRef(documents);
+  documentsRef.current = documents;
 
   useEffect(() => {
     if (!isOpen) return;
-    setForm(EMPTY);
+    setForm({
+      ...EMPTY,
+      sourceId: documentsRef.current[0]?.id ?? GENERAL_QUIZ_SOURCE.id,
+    });
     setErrors({});
     const handle = (e) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', handle);
@@ -36,6 +44,17 @@ export function QuizCreatorModal({ isOpen, onClose, onCreate }) {
       document.body.style.overflow = '';
     };
   }, [isOpen, onClose]);
+
+  useEffect(() => {
+    const sourceExists = form.sourceId === GENERAL_QUIZ_SOURCE.id ||
+      documents.some((document) => document.id === form.sourceId);
+    if (sourceExists) return;
+
+    setForm((current) => ({
+      ...current,
+      sourceId: documents[0]?.id ?? GENERAL_QUIZ_SOURCE.id,
+    }));
+  }, [documents, form.sourceId]);
 
   if (!isOpen) return null;
 
@@ -57,11 +76,12 @@ export function QuizCreatorModal({ isOpen, onClose, onCreate }) {
   const handleGenerate = () => {
     const errs = validate();
     if (Object.keys(errs).length) { setErrors(errs); return; }
-    const src = quizSourceDocuments.find((d) => d.id === form.sourceId);
+    const src = sourceDocuments.find((document) => document.id === form.sourceId) ??
+      GENERAL_QUIZ_SOURCE;
     onCreate({
       title:      form.title.trim(),
-      sourceId:   form.sourceId,
-      sourceName: src?.name ?? 'Unknown',
+      sourceId:   src.id,
+      sourceName: src.name,
       count:      form.count,
       difficulty: form.difficulty,
       types:      form.types,
@@ -103,7 +123,7 @@ export function QuizCreatorModal({ isOpen, onClose, onCreate }) {
           <div className="flex items-start gap-2.5 bg-accent-secondary border border-accent/20 rounded-xl px-3.5 py-3">
             <Info className="h-4 w-4 text-accent shrink-0 mt-0.5" />
             <p className="text-xs text-accent leading-relaxed">
-              Quizzes are generated from built-in demonstration question banks. Real AI generation from your documents will be available once the OpenAI integration is connected.
+              Selecting a document only labels the quiz source; questions still come from built-in demonstration banks. Real AI generation from document contents is not available yet.
             </p>
           </div>
 
@@ -143,7 +163,7 @@ export function QuizCreatorModal({ isOpen, onClose, onCreate }) {
               onChange={(e) => setForm((f) => ({ ...f, sourceId: e.target.value }))}
               className={`${inputBase} ${inputNormal} cursor-pointer`}
             >
-              {quizSourceDocuments.map((d) => (
+              {sourceDocuments.map((d) => (
                 <option key={d.id} value={d.id}>{d.name}</option>
               ))}
             </select>

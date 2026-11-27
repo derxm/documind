@@ -4,6 +4,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 // Layouts
 import MainLayout from './layouts/MainLayout';
 import DashboardLayout from './layouts/DashboardLayout';
+import { DocumentProvider } from './context/DocumentContext';
 
 // Public Pages
 import HomePage from './pages/HomePage';
@@ -26,7 +27,7 @@ function App() {
       </Route>
 
       {/* Authenticated Application Dashboard Routes */}
-      <Route element={<DashboardLayout />}>
+      <Route element={<DocumentProvider><DashboardLayout /></DocumentProvider>}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/documents" element={<DocumentsPage />} />
         <Route path="/assistant" element={<AssistantPage />} />

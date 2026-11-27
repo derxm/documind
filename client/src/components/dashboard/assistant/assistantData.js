@@ -12,54 +12,6 @@ const daysAgo = (d, h = 10, m = 0) =>
   now - d * 86_400_000 - h * 3_600_000 - m * 60_000;
 
 // ---------------------------------------------------------------------------
-// Demonstration documents (mirrors documentsData.js — no duplication of data
-// file, just the fields the assistant needs)
-// ---------------------------------------------------------------------------
-export const assistantDocuments = [
-  {
-    id: 'doc-1',
-    name: 'Computer Science Notes',
-    fileName: 'Computer Science Notes.pdf',
-    type: 'PDF',
-    size: '3.4 MB',
-  },
-  {
-    id: 'doc-2',
-    name: 'Database Management',
-    fileName: 'Database Management.docx',
-    type: 'DOCX',
-    size: '1.8 MB',
-  },
-  {
-    id: 'doc-3',
-    name: 'Software Engineering',
-    fileName: 'Software Engineering.pdf',
-    type: 'PDF',
-    size: '4.2 MB',
-  },
-  {
-    id: 'doc-4',
-    name: 'Operating Systems',
-    fileName: 'Operating Systems.pdf',
-    type: 'PDF',
-    size: '2.9 MB',
-  },
-  {
-    id: 'doc-5',
-    name: 'Introduction to Algorithms',
-    fileName: 'Introduction to Algorithms.pdf',
-    type: 'PDF',
-    size: '5.1 MB',
-  },
-  {
-    id: 'doc-6',
-    name: 'Web Development Guide',
-    fileName: 'Web Development Guide.docx',
-    type: 'DOCX',
-    size: '2.3 MB',
-  },
-];
-
 // ---------------------------------------------------------------------------
 // AI response content blocks
 // Structured content instead of raw markdown — rendered by AiContentRenderer.
@@ -487,10 +439,9 @@ export const suggestedPrompts = [
 // Simulated AI response generator
 // Returns a structured content array appropriate for the user's message.
 // ---------------------------------------------------------------------------
-export function generateDemoResponse(userText, documentId) {
+export function generateDemoResponse(userText, documentName) {
   const lower = userText.toLowerCase();
-  const doc = assistantDocuments.find((d) => d.id === documentId);
-  const docName = doc ? doc.name : 'your document';
+  const docName = documentName || 'your document';
 
   if (lower.includes('summarise') || lower.includes('summarize') || lower.includes('summary')) {
     return [

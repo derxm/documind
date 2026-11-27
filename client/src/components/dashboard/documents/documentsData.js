@@ -66,9 +66,3 @@ export const initialDocuments = [
     status: 'Failed',
   },
 ];
-
-export const documentStatsConfig = {
-  total: 24,
-  processed: 21,
-  processing: 3,
-};

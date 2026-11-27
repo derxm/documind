@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   FileText,
@@ -20,14 +20,18 @@ import {
   Badge,
   Button,
 } from '../../index';
-import { recentDocumentsData } from './dashboardData';
 import Toast from '../../Toast';
 import { useToast } from '../../../hooks/useToast';
+import { useDocumentContext } from '../../../context/DocumentContext';
 
 export function RecentDocuments() {
   const navigate = useNavigate();
   const [activeMenuId, setActiveMenuId] = useState(null);
-  const docs = recentDocumentsData;
+  const { documents } = useDocumentContext();
+  const docs = useMemo(
+    () => [...documents].sort((a, b) => b.timestamp - a.timestamp).slice(0, 4),
+    [documents]
+  );
   const [toast, showToast] = useToast();
 
   // Close open action menu when clicking anywhere outside

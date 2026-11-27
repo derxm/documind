@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, X, ChevronDown, Search, Check } from 'lucide-react';
-import { assistantDocuments } from './assistantData';
+import { useDocumentContext } from '../../../context/DocumentContext';
 
 // ---------------------------------------------------------------------------
 // Document picker modal
 // ---------------------------------------------------------------------------
-function DocumentPickerModal({ selectedId, onSelect, onClose }) {
+function DocumentPickerModal({ documents, selectedId, onSelect, onClose }) {
   const [query, setQuery] = useState('');
 
   useEffect(() => {
@@ -20,11 +20,11 @@ function DocumentPickerModal({ selectedId, onSelect, onClose }) {
   }, []);
 
   const filtered = query.trim()
-    ? assistantDocuments.filter((d) =>
+    ? documents.filter((d) =>
         d.name.toLowerCase().includes(query.toLowerCase()) ||
         d.fileName.toLowerCase().includes(query.toLowerCase())
       )
-    : assistantDocuments;
+    : documents;
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
@@ -139,8 +139,9 @@ function DocumentPickerModal({ selectedId, onSelect, onClose }) {
  */
 export function DocumentContextSelector({ selectedDocumentId, onSelect, onRemove }) {
   const [pickerOpen, setPickerOpen] = useState(false);
+  const { documents } = useDocumentContext();
 
-  const selectedDoc = assistantDocuments.find((d) => d.id === selectedDocumentId);
+  const selectedDoc = documents.find((document) => document.id === selectedDocumentId);
 
   return (
     <>
@@ -188,6 +189,7 @@ export function DocumentContextSelector({ selectedDocumentId, onSelect, onRemove
 
       {pickerOpen && (
         <DocumentPickerModal
+          documents={documents}
           selectedId={selectedDocumentId}
           onSelect={onSelect}
           onClose={() => setPickerOpen(false)}

@@ -5,17 +5,8 @@
  */
 
 // ---------------------------------------------------------------------------
-// Source documents (mirrors documentsData.js fields needed here)
-// ---------------------------------------------------------------------------
-export const quizSourceDocuments = [
-  { id: 'doc-1', name: 'Computer Science Notes' },
-  { id: 'doc-2', name: 'Database Management' },
-  { id: 'doc-3', name: 'Software Engineering' },
-  { id: 'doc-4', name: 'Operating Systems' },
-  { id: 'doc-5', name: 'Introduction to Algorithms' },
-  { id: 'doc-6', name: 'Web Development Guide' },
-  { id: 'general', name: 'General Knowledge' },
-];
+// Built-in source remains available alongside shared documents.
+export const GENERAL_QUIZ_SOURCE = { id: 'general', name: 'General Knowledge' };
 
 // ---------------------------------------------------------------------------
 // Difficulty config

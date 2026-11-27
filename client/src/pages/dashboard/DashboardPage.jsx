@@ -9,11 +9,14 @@ import {
   statsData,
   quickActionsData,
 } from '../../components/dashboard/overview';
+import { useDocumentContext } from '../../context/DocumentContext';
 
 /**
  * Complete, production-grade Dashboard Overview Page.
  */
 export function DashboardPage() {
+  const { totalDocuments } = useDocumentContext();
+
   return (
     <div className="space-y-8 pb-10">
       {/* 1. Welcome Hero Section */}
@@ -29,7 +32,7 @@ export function DashboardPage() {
             <StatCard
               key={stat.id}
               title={stat.title}
-              value={stat.value}
+              value={stat.id === 'documents' ? totalDocuments : stat.value}
               change={stat.change}
               isPositive={stat.isPositive}
               icon={stat.icon}

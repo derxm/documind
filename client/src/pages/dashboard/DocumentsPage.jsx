@@ -1,12 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Files,
   UploadCloud,
   CheckCircle2,
-  Clock,
-  Sparkles,
-  Check,
 } from 'lucide-react';
 import { Button, Badge } from '../../components';
 import {
@@ -17,15 +13,19 @@ import {
   UploadModal,
   DeleteModal,
   SummaryModal,
-  initialDocuments,
-  documentStatsConfig,
 } from '../../components/dashboard/documents';
+import { useDocumentContext } from '../../context/DocumentContext';
 
 export function DocumentsPage() {
   const navigate = useNavigate();
-
-  // Documents state initialized with demonstration records
-  const [documents, setDocuments] = useState(initialDocuments);
+  const {
+    documents,
+    totalDocuments,
+    processedDocuments,
+    processingDocuments,
+    addDocument,
+    deleteDocument,
+  } = useDocumentContext();
 
   // Search, Filter, and Sort state
   const [searchQuery, setSearchQuery] = useState('');
@@ -86,18 +86,6 @@ export function DocumentsPage() {
       });
   }, [documents, searchQuery, fileTypeFilter, statusFilter, sortBy]);
 
-  // Compute stats dynamically reflecting local uploads and deletions
-  const dynamicStats = useMemo(() => {
-    const totalDiff = documents.length - initialDocuments.length;
-    const processingAdded = documents.filter((d) => d.id.startsWith('doc-') && !initialDocuments.some(id => id.id === d.id)).length;
-
-    return {
-      total: Math.max(0, documentStatsConfig.total + totalDiff),
-      processed: documentStatsConfig.processed,
-      processing: Math.max(0, documentStatsConfig.processing + processingAdded),
-    };
-  }, [documents]);
-
   // Document action handlers
   const handleOpenAssistant = (doc) => {
     navigate('/assistant');
@@ -117,7 +105,7 @@ export function DocumentsPage() {
 
   const handleConfirmDelete = (id) => {
     const targetDoc = documents.find((d) => d.id === id);
-    setDocuments((prev) => prev.filter((d) => d.id !== id));
+    deleteDocument(id);
     setDeleteTarget(null);
     if (targetDoc) {
       showToast(`Removed "${targetDoc.name}" from demonstration library.`);
@@ -125,7 +113,7 @@ export function DocumentsPage() {
   };
 
   const handleUploadSuccess = (newDoc) => {
-    setDocuments((prev) => [newDoc, ...prev]);
+    addDocument(newDoc);
     showToast(`Added "${newDoc.name}" with Processing status.`);
   };
 
@@ -170,9 +158,9 @@ export function DocumentsPage() {
 
       {/* 2. Document Statistics */}
       <DocumentStats
-        total={dynamicStats.total}
-        processed={dynamicStats.processed}
-        processing={dynamicStats.processing}
+        total={totalDocuments}
+        processed={processedDocuments}
+        processing={processingDocuments}
       />
 
       {/* 3. Search, Filter and Sort Toolbar */}
@@ -204,7 +192,7 @@ export function DocumentsPage() {
       ) : (
         <div className="space-y-2">
           <p className="text-xs text-text-muted px-1">
-            Showing {documents.length} sample document{documents.length !== 1 ? 's' : ''} from {dynamicStats.total} total documents.
+            Showing {documents.length} document{documents.length !== 1 ? 's' : ''}.
           </p>
           <DocumentTable
             documents={filteredAndSortedDocuments}

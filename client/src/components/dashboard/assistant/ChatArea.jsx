@@ -14,7 +14,8 @@ import { Badge } from '../../index';
 import { ChatMessage, TypingIndicator } from './ChatMessage';
 import { MessageComposer } from './MessageComposer';
 import { DocumentContextSelector } from './DocumentContextSelector';
-import { suggestedPrompts, assistantDocuments } from './assistantData';
+import { suggestedPrompts } from './assistantData';
+import { useDocumentContext } from '../../../context/DocumentContext';
 
 // ---------------------------------------------------------------------------
 // Icon map for suggested prompts
@@ -126,6 +127,7 @@ export function ChatArea({
 }) {
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
+  const { getDocumentById } = useDocumentContext();
 
   // Auto-scroll to bottom whenever messages change or typing indicator appears
   useEffect(() => {
@@ -134,7 +136,7 @@ export function ChatArea({
     }
   }, [conversation?.messages, isTyping]);
 
-  const selectedDoc = assistantDocuments.find((d) => d.id === selectedDocumentId);
+  const selectedDoc = getDocumentById(selectedDocumentId);
   const hasMessages = conversation?.messages?.length > 0;
 
   return (

@@ -15,7 +15,6 @@ export const statsData = [
   {
     id: 'documents',
     title: 'Documents Uploaded',
-    value: '24',
     change: '+4 this week',
     isPositive: true,
     icon: Files,
@@ -90,49 +89,6 @@ export const quickActionsData = [
     to: '/quiz-generator',
     badge: 'Study Engine',
     badgeVariant: 'neutral',
-  },
-];
-
-export const recentDocumentsData = [
-  {
-    id: 'doc-1',
-    name: 'Computer Science Notes',
-    fileName: 'Computer Science Notes.pdf',
-    type: 'PDF',
-    size: '3.4 MB',
-    dateAdded: 'Nov 22, 2026',
-    status: 'Processed',
-    statusVariant: 'success',
-  },
-  {
-    id: 'doc-2',
-    name: 'Database Management',
-    fileName: 'Database Management.docx',
-    type: 'DOCX',
-    size: '1.8 MB',
-    dateAdded: 'Nov 21, 2026',
-    status: 'Processed',
-    statusVariant: 'success',
-  },
-  {
-    id: 'doc-3',
-    name: 'Software Engineering',
-    fileName: 'Software Engineering.pdf',
-    type: 'PDF',
-    size: '4.2 MB',
-    dateAdded: 'Nov 20, 2026',
-    status: 'Processing',
-    statusVariant: 'accent',
-  },
-  {
-    id: 'doc-4',
-    name: 'Operating Systems',
-    fileName: 'Operating Systems.pdf',
-    type: 'PDF',
-    size: '2.9 MB',
-    dateAdded: 'Nov 19, 2026',
-    status: 'Processed',
-    statusVariant: 'success',
   },
 ];
 
