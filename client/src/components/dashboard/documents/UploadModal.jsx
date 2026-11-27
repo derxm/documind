@@ -16,32 +16,80 @@ const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
  * Upload Document Dialog with drag-and-drop, validation, and progress simulation.
  *
  * @param {Object} props
- * @param {boolean} props.isOpen
+ * @param {boolean}  props.isOpen
  * @param {Function} props.onClose
- * @param {Function} props.onUploadSuccess - Called with the new document object
+ * @param {Function} props.onUploadSuccess  Called with the new document object on success
  */
 export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
-  const [file, setFile] = useState(null);
-  const [error, setError] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
+  const [file, setFile]                   = useState(null);
+  const [error, setError]                 = useState(null);
+  const [isDragging, setIsDragging]       = useState(false);
+  const [isUploading, setIsUploading]     = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  const fileInputRef = useRef(null);
+  const fileInputRef  = useRef(null);
 
-  // Close on Escape key press
+  // All simulation timer IDs live here so the cleanup effect can clear them.
+  const t1Ref         = useRef(null);
+  const t2Ref         = useRef(null);
+  const t3Ref         = useRef(null);
+  const t4Ref         = useRef(null);
+
+  const uploadAttemptRef = useRef(0);
+  const cancelledRef  = useRef(false);
+  const isOpenRef = useRef(isOpen);
+  isOpenRef.current = isOpen;
+
+  // ---------------------------------------------------------------------------
+  // Clear all pending timers (called on cancel, close, and unmount).
+  // ---------------------------------------------------------------------------
+  const clearAllTimers = () => {
+    [t1Ref, t2Ref, t3Ref, t4Ref].forEach((r) => {
+      if (r.current !== null) {
+        clearTimeout(r.current);
+        r.current = null;
+      }
+    });
+  };
+
+  // Cancel timers when the modal closes or the component unmounts.
+  useEffect(() => {
+    if (!isOpen) {
+      cancelledRef.current = true;
+      clearAllTimers();
+      setFile(null);
+      setError(null);
+      setIsUploading(false);
+      setUploadProgress(0);
+      return;
+    }
+
+    cancelledRef.current = false;
+    return () => {
+      cancelledRef.current = true;
+      uploadAttemptRef.current += 1;
+      clearAllTimers();
+    };
+  }, [isOpen]);
+
+  // Close on Escape key.
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && isOpen && !isUploading) {
+      if (e.key === 'Escape' && isOpen) {
         handleClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, isUploading]);
+  }, [isOpen]);
 
+  // ---------------------------------------------------------------------------
+  // Reset all local state and close.
+  // ---------------------------------------------------------------------------
   const handleClose = () => {
-    if (isUploading) return;
+    cancelledRef.current = true;
+    uploadAttemptRef.current += 1;
+    clearAllTimers();
     setFile(null);
     setError(null);
     setIsDragging(false);
@@ -50,17 +98,17 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
     onClose();
   };
 
+  // ---------------------------------------------------------------------------
+  // File validation
+  // ---------------------------------------------------------------------------
   const validateAndSetFile = (selectedFile) => {
     setError(null);
-
     if (!selectedFile) return;
 
     const fileName = selectedFile.name.toLowerCase();
-    const isPdf = fileName.endsWith('.pdf') || selectedFile.type === 'application/pdf';
-    const isDocx =
-      fileName.endsWith('.docx') ||
-      selectedFile.type ===
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    const isPdf  = fileName.endsWith('.pdf')  || selectedFile.type === 'application/pdf';
+    const isDocx = fileName.endsWith('.docx') ||
+      selectedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
     if (!isPdf && !isDocx) {
       setError('Invalid file type. Only PDF (.pdf) and Word (.docx) files are supported.');
@@ -78,80 +126,80 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
     setFile(selectedFile);
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e) => {
+  const handleDragOver  = (e) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
+  const handleDrop      = (e) => {
     e.preventDefault();
     setIsDragging(false);
+    if (e.dataTransfer.files?.length > 0) validateAndSetFile(e.dataTransfer.files[0]);
   };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      validateAndSetFile(e.dataTransfer.files[0]);
-    }
-  };
-
   const handleFileSelect = (e) => {
-    if (e.target.files && e.target.files.length > 0) {
-      validateAndSetFile(e.target.files[0]);
-    }
+    if (e.target.files?.length > 0) validateAndSetFile(e.target.files[0]);
   };
 
   const formatFileSize = (bytes) => {
     if (!bytes) return '0 B';
     const mb = bytes / (1024 * 1024);
     if (mb >= 1) return `${mb.toFixed(1)} MB`;
-    const kb = bytes / 1024;
-    return `${kb.toFixed(0)} KB`;
+    return `${(bytes / 1024).toFixed(0)} KB`;
   };
 
+  // ---------------------------------------------------------------------------
+  // Simulated upload — timers stored in refs so the cleanup effect can reach them.
+  // ---------------------------------------------------------------------------
   const handleStartUpload = () => {
     if (!file) return;
+
+    const attempt = ++uploadAttemptRef.current;
+    cancelledRef.current = false;
 
     setIsUploading(true);
     setUploadProgress(15);
 
-    // Simulated multi-stage progress
-    const t1 = setTimeout(() => setUploadProgress(45), 250);
-    const t2 = setTimeout(() => setUploadProgress(85), 550);
-    const t3 = setTimeout(() => {
+    t1Ref.current = setTimeout(() => {
+      if (cancelledRef.current || !isOpenRef.current || uploadAttemptRef.current !== attempt) return;
+      setUploadProgress(45);
+    }, 250);
+
+    t2Ref.current = setTimeout(() => {
+      if (cancelledRef.current || !isOpenRef.current || uploadAttemptRef.current !== attempt) return;
+      setUploadProgress(85);
+    }, 550);
+
+    t3Ref.current = setTimeout(() => {
+      if (cancelledRef.current || !isOpenRef.current || uploadAttemptRef.current !== attempt) return;
       setUploadProgress(100);
 
-      // Create new document record in local state
-      const ext = file.name.toLowerCase().endsWith('.docx') ? 'DOCX' : 'PDF';
+      const ext       = file.name.toLowerCase().endsWith('.docx') ? 'DOCX' : 'PDF';
       const cleanName = file.name.replace(/\.[^/.]+$/, '');
-      const newDoc = {
-        id: `doc-${Date.now()}`,
-        name: cleanName,
-        fileName: file.name,
-        type: ext,
-        size: formatFileSize(file.size),
+      const newDoc    = {
+        id:        `doc-${Date.now()}`,
+        name:      cleanName,
+        fileName:  file.name,
+        type:      ext,
+        size:      formatFileSize(file.size),
         sizeBytes: file.size,
         dateAdded: new Date().toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
+          month: 'short', day: 'numeric', year: 'numeric',
         }),
         timestamp: Date.now(),
-        status: 'Processing',
+        status:    'Processing',
       };
 
-      setTimeout(() => {
+      // Short pause at 100% before closing, so the full bar is visible.
+      t4Ref.current = setTimeout(() => {
+        if (cancelledRef.current || !isOpenRef.current || uploadAttemptRef.current !== attempt) return;
         onUploadSuccess(newDoc);
-        handleClose();
+        cancelledRef.current = true;
+        clearAllTimers();
+        // Reset state then close after the successful upload.
+        setFile(null);
+        setError(null);
+        setIsUploading(false);
+        setUploadProgress(0);
+        onClose();
       }, 300);
     }, 900);
-
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-    };
   };
 
   if (!isOpen) return null;
@@ -193,9 +241,8 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
 
           <button
             onClick={handleClose}
-            disabled={isUploading}
             aria-label="Close dialog"
-            className="p-1.5 text-text-secondary hover:text-primary hover:bg-background rounded-lg transition-colors disabled:opacity-40"
+            className="p-1.5 text-text-secondary hover:text-primary hover:bg-background rounded-lg transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
@@ -263,17 +310,14 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
                       {file.name}
                     </p>
                     <p className="text-[11px] text-text-secondary">
-                      {formatFileSize(file.size)} • {file.name.endsWith('.docx') ? 'Word Document' : 'PDF Document'}
+                      {formatFileSize(file.size)} · {file.name.endsWith('.docx') ? 'Word Document' : 'PDF Document'}
                     </p>
                   </div>
                 </div>
 
                 {!isUploading && (
                   <button
-                    onClick={() => {
-                      setFile(null);
-                      setError(null);
-                    }}
+                    onClick={() => { setFile(null); setError(null); }}
                     aria-label="Remove selected file"
                     className="p-1.5 text-text-secondary hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   >
@@ -282,7 +326,7 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
                 )}
               </div>
 
-              {/* Upload Progress Bar (when uploading) */}
+              {/* Upload Progress Bar */}
               {isUploading && (
                 <div className="space-y-1.5 p-3 rounded-xl bg-accent-secondary/30 border border-accent/20">
                   <div className="flex items-center justify-between text-xs font-semibold text-accent">
@@ -303,7 +347,7 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
             </div>
           )}
 
-          {/* Clear Demonstration Disclaimer Notice */}
+          {/* Demonstration Disclaimer Notice */}
           <div className="flex items-start gap-2 p-3 rounded-xl bg-background-subtle border border-border-subtle text-[11px] text-text-secondary">
             <Info className="h-4 w-4 shrink-0 text-accent mt-0.5" />
             <p className="leading-relaxed">
@@ -318,7 +362,6 @@ export function UploadModal({ isOpen, onClose, onUploadSuccess }) {
             variant="outline"
             size="md"
             onClick={handleClose}
-            disabled={isUploading}
           >
             Cancel
           </Button>

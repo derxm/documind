@@ -3,6 +3,8 @@ import { useLocation } from 'react-router-dom';
 import { Menu, Search, Bell, Sparkles } from 'lucide-react';
 import UserMenu from './UserMenu';
 import { Badge } from '../Badge';
+import Toast from '../Toast';
+import { useToast } from '../../hooks/useToast';
 
 const routeTitles = {
   '/dashboard': 'Dashboard Overview',
@@ -24,9 +26,11 @@ export function DashboardHeader({ onMenuClick }) {
   const currentTitle = routeTitles[location.pathname] || 'DocuMind AI';
 
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(true);
+  const [toast, showToast] = useToast();
 
   return (
     <header className="sticky top-0 z-20 h-[70px] bg-surface/90 backdrop-blur-md border-b border-border px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
+      <Toast message={toast} />
       {/* Left: Mobile Hamburger & Page Title / Breadcrumb */}
       <div className="flex items-center gap-3 min-w-0">
         <button
@@ -68,7 +72,7 @@ export function DashboardHeader({ onMenuClick }) {
         {/* Notification Bell */}
         <button
           onClick={() => {
-            alert('Notifications: All systems operational. 0 new alerts.');
+            showToast('The notification inbox is not available in this demonstration.');
             setHasUnreadNotifications(false);
           }}
           title="Notifications"

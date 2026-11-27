@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+import tailwindcssAnimate from 'tailwindcss-animate';
+
 export default {
   content: [
     "./index.html",
@@ -47,8 +49,9 @@ export default {
         subtle: '0 1px 3px 0 rgba(23, 26, 46, 0.04), 0 1px 2px -1px rgba(23, 26, 46, 0.02)',
         card: '0 2px 8px -2px rgba(23, 26, 46, 0.05), 0 1px 4px -1px rgba(23, 26, 46, 0.03)',
         'card-hover': '0 12px 28px -4px rgba(23, 26, 46, 0.08), 0 4px 12px -2px rgba(23, 26, 46, 0.04)',
+        dropdown: '0 4px 14px -3px rgba(23, 26, 46, 0.10), 0 2px 5px -2px rgba(23, 26, 46, 0.05)',
       },
     },
   },
-  plugins: [],
+  plugins: [tailwindcssAnimate],
 };

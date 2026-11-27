@@ -7,13 +7,15 @@ import {
   HelpCircle,
   LogOut,
   ChevronDown,
-  Sparkles,
 } from 'lucide-react';
 import { Badge } from '../Badge';
+import Toast from '../Toast';
+import { useToast } from '../../hooks/useToast';
 
 export function UserMenu() {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
+  const [toast, showToast] = useToast();
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -28,12 +30,13 @@ export function UserMenu() {
   }, []);
 
   const handleLogout = () => {
-    alert('Logged out (Demo mode)');
+    showToast('Sign-out is not available in this demonstration. You are still signed in.');
     setIsOpen(false);
   };
 
   return (
     <div className="relative" ref={menuRef}>
+      <Toast message={toast} />
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -109,7 +112,7 @@ export function UserMenu() {
           <div className="py-1">
             <button
               onClick={() => {
-                alert('Support center will open here');
+                showToast('Support is not available in this demonstration.');
                 setIsOpen(false);
               }}
               className="w-full flex items-center gap-2.5 px-4 py-2 text-xs font-medium text-text-secondary hover:text-primary hover:bg-background transition-colors text-left"

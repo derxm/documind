@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Sparkles,
@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   Zap,
+  Info,
 } from 'lucide-react';
 import SidebarItem from './SidebarItem';
 import { Button } from '../Button';
@@ -56,13 +57,32 @@ const navItems = [
  * @param {Function} [props.onItemClick] - Called when a nav link is clicked (e.g. to close mobile drawer)
  */
 export function Sidebar({ onItemClick }) {
+  const [toast, setToast]   = useState(null);
+  const toastTimerRef       = useRef(null);
+
+  useEffect(() => {
+    return () => { if (toastTimerRef.current) clearTimeout(toastTimerRef.current); };
+  }, []);
+
+  const showToast = (msg) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToast(msg);
+    toastTimerRef.current = setTimeout(() => setToast(null), 3500);
+  };
+
   const handleLogout = () => {
-    // Non-functional mock logout for demonstration
-    alert('Logged out (Demo mode)');
+    showToast('Sign-out will be available once authentication is connected.');
   };
 
   return (
     <div className="flex flex-col h-full bg-surface border-r border-border select-none">
+      {/* Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-primary text-white shadow-2xl border border-primary/20 text-xs font-medium animate-in slide-in-from-bottom-5 duration-200 max-w-xs">
+          <Info className="h-4 w-4 text-blue-300 shrink-0" />
+          <span>{toast}</span>
+        </div>
+      )}
       {/* 1. Logo & Branding */}
       <div className="h-[70px] px-6 flex items-center border-b border-border-subtle shrink-0">
         <Link
@@ -121,7 +141,7 @@ export function Sidebar({ onItemClick }) {
             size="sm"
             variant="primary"
             fullWidth
-            onClick={() => alert('Upgrade modal will open here (Demo mode)')}
+            onClick={() => showToast('Plan upgrades will be available once payment integration is connected.')}
           >
             Upgrade Now
           </Button>

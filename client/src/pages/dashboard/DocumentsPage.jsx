@@ -108,7 +108,7 @@ export function DocumentsPage() {
   };
 
   const handleDownload = (doc) => {
-    showToast(`Demonstration Download: "${doc.fileName}" triggered locally.`);
+    showToast('File downloads will be available when document storage is connected.');
   };
 
   const handleDeleteClick = (doc) => {
@@ -202,13 +202,18 @@ export function DocumentsPage() {
           onResetFilters={handleResetFilters}
         />
       ) : (
-        <DocumentTable
-          documents={filteredAndSortedDocuments}
-          onOpenAssistant={handleOpenAssistant}
-          onViewSummary={handleViewSummary}
-          onDownload={handleDownload}
-          onDeleteClick={handleDeleteClick}
-        />
+        <div className="space-y-2">
+          <p className="text-xs text-text-muted px-1">
+            Showing {documents.length} sample document{documents.length !== 1 ? 's' : ''} from {dynamicStats.total} total documents.
+          </p>
+          <DocumentTable
+            documents={filteredAndSortedDocuments}
+            onOpenAssistant={handleOpenAssistant}
+            onViewSummary={handleViewSummary}
+            onDownload={handleDownload}
+            onDeleteClick={handleDeleteClick}
+          />
+        </div>
       )}
 
       {/* 5. Modals & Dialogs */}

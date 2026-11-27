@@ -11,11 +11,16 @@ import {
   Button,
 } from '../../index';
 import { usageData } from './dashboardData';
+import Toast from '../../Toast';
+import { useToast } from '../../../hooks/useToast';
 
 export function UsageOverview() {
   const { aiRequests, storage } = usageData;
+  const [toast, showToast] = useToast();
 
   return (
+    <>
+    <Toast message={toast} />
     <Card padding="none" className="overflow-hidden">
       <CardHeader className="border-b border-border-subtle bg-surface">
         <div className="flex items-center justify-between">
@@ -96,12 +101,13 @@ export function UsageOverview() {
           size="sm"
           fullWidth
           rightIcon={<ArrowUpRight className="h-4 w-4" />}
-          onClick={() => alert('Billing and upgrade settings modal')}
+          onClick={() => showToast('Billing and plan settings are not available in this demonstration.')}
         >
           Manage Plan & Limits
         </Button>
       </CardFooter>
     </Card>
+    </>
   );
 }
 
